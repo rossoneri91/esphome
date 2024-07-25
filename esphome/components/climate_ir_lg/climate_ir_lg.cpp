@@ -159,6 +159,7 @@ bool LgIrClimate::on_receive(remote_base::RemoteReceiveData data) {
         this->mode = climate::CLIMATE_MODE_COOL;
         break;
     }
+    mode_before_ = this->mode;
 
     // Get fan speed
     if (this->mode == climate::CLIMATE_MODE_HEAT_COOL) {
