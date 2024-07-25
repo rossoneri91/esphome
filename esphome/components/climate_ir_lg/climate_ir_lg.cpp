@@ -40,7 +40,7 @@ const uint16_t BITS = 28;
 void LgIrClimate::transmit_state() {
   uint32_t remote_state = 0x8800000;
 
-  // ESP_LOGD(TAG, "climate_lg_ir mode_before_ code: 0x%02X", modeBefore_);
+  ESP_LOGD(TAG, "climate_lg_ir mode_before_ code: 0x%02X", mode_before_);
 
   // Set command
   if (send_swing_cmd_) {
