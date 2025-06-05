@@ -57,7 +57,7 @@ void FingerprintGrowComponent::update() {
 }
 
 void FingerprintGrowComponent::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up Grow Fingerprint Reader...");
+  ESP_LOGCONFIG(TAG, "Running setup");
 
   this->has_sensing_pin_ = (this->sensing_pin_ != nullptr);
   this->has_power_pin_ = (this->sensor_power_pin_ != nullptr);
@@ -307,7 +307,7 @@ void FingerprintGrowComponent::delete_fingerprint(uint16_t finger_id) {
 
 void FingerprintGrowComponent::delete_all_fingerprints() {
   ESP_LOGI(TAG, "Deleting all stored fingerprints");
-  this->data_ = {EMPTY};
+  this->data_ = {DELETE_ALL};
   switch (this->send_command_()) {
     case OK:
       ESP_LOGI(TAG, "Deleted all fingerprints");

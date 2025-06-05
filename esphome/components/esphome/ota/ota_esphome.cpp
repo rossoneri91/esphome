@@ -1,5 +1,5 @@
 #include "ota_esphome.h"
-
+#ifdef USE_OTA
 #include "esphome/components/md5/md5.h"
 #include "esphome/components/network/util.h"
 #include "esphome/components/ota/ota_backend.h"
@@ -26,7 +26,7 @@ void ESPHomeOTAComponent::setup() {
   ota::register_ota_platform(this);
 #endif
 
-  server_ = socket::socket_ip(SOCK_STREAM, 0);
+  server_ = socket::socket_ip_loop_monitored(SOCK_STREAM, 0);  // monitored for incoming connections
   if (server_ == nullptr) {
     ESP_LOGW(TAG, "Could not create socket");
     this->mark_failed();
@@ -100,9 +100,12 @@ void ESPHomeOTAComponent::handle_() {
 #endif
 
   if (client_ == nullptr) {
-    struct sockaddr_storage source_addr;
-    socklen_t addr_len = sizeof(source_addr);
-    client_ = server_->accept((struct sockaddr *) &source_addr, &addr_len);
+    // Check if the server socket is ready before accepting
+    if (this->server_->ready()) {
+      struct sockaddr_storage source_addr;
+      socklen_t addr_len = sizeof(source_addr);
+      client_ = server_->accept((struct sockaddr *) &source_addr, &addr_len);
+    }
   }
   if (client_ == nullptr)
     return;
@@ -111,10 +114,12 @@ void ESPHomeOTAComponent::handle_() {
   int err = client_->setsockopt(IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
   if (err != 0) {
     ESP_LOGW(TAG, "Socket could not enable TCP nodelay, errno %d", errno);
+    client_->close();
+    client_ = nullptr;
     return;
   }
 
-  ESP_LOGD(TAG, "Starting update from %s...", this->client_->getpeername().c_str());
+  ESP_LOGD(TAG, "Starting update from %s", this->client_->getpeername().c_str());
   this->status_set_warning();
 #ifdef USE_OTA_STATE_CALLBACK
   this->state_callback_.call(ota::OTA_STARTED, 0.0f, 0);
@@ -410,3 +415,4 @@ float ESPHomeOTAComponent::get_setup_priority() const { return setup_priority::A
 uint16_t ESPHomeOTAComponent::get_port() const { return this->port_; }
 void ESPHomeOTAComponent::set_port(uint16_t port) { this->port_ = port; }
 }  // namespace esphome
+#endif

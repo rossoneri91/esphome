@@ -39,7 +39,7 @@ void HydreonRGxxComponent::dump_config() {
 }
 
 void HydreonRGxxComponent::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up hydreon_rgxx...");
+  ESP_LOGCONFIG(TAG, "Running setup");
   while (this->available() != 0) {
     this->read();
   }
@@ -236,7 +236,7 @@ void HydreonRGxxComponent::process_line_() {
   }
   bool is_data_line = false;
   for (int i = 0; i < NUM_SENSORS; i++) {
-    if (this->sensors_[i] != nullptr && this->buffer_starts_with_(PROTOCOL_NAMES[i])) {
+    if (this->sensors_[i] != nullptr && this->buffer_.find(PROTOCOL_NAMES[i]) != std::string::npos) {
       is_data_line = true;
       break;
     }
